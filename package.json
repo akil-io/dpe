@@ -1,0 +1,28 @@
+{
+  "name": "dpe",
+  "version": "1.0.0",
+  "description": "",
+  "main": "bin/dpe",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "dpe": "bin/dpe"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "async": "^2.0.0",
+    "commander": "^2.9.0",
+    "debug": "^2.2.0",
+    "lodash": "^4.13.1",
+    "node-uuid": "^1.4.7",
+    "optimist": "^0.6.1",
+    "socket.io": "^1.4.8",
+    "socket.io-client": "^1.4.8"
+  },
+  "preferGlobal": "true"
+}

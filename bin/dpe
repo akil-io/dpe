@@ -1,0 +1,11 @@
+#!/usr/bin/env node
+
+var program = require('commander');
+
+program
+    .version(require('../package.json').version)
+    .command('init', 'initiate new project space')
+    .command('service', 'manage background service')
+    .command('app', 'manage local app')
+    .command('cli', 'command line utility')
+    .parse(process.argv);

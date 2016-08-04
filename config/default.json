@@ -1,0 +1,15 @@
+{
+  "pid": "/var/run/dpe-service.pid",
+  "repl": {
+    "enabled": true,
+    "title": "DPE",
+    "socket": "/tmp/dpe-repl.sock"
+  },
+  "cli": {
+    "port": "49001"
+  },
+  "log": {
+    "out": "/var/log/dpe-service.log",
+    "err": "/var/log/dpe-error.log"
+  }
+}

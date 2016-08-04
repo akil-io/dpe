@@ -1,0 +1,70 @@
+#!/usr/bin/env node
+
+"use strict";
+
+var debug   = require('debug')('dpe:cli');
+var util = require('util');
+var program = require('commander');
+var io = require('socket.io-client');
+var path = require('path');
+
+var Service = require('../lib/service');
+var s = new Service({
+    init: false
+});
+
+var socket = io('http://localhost:' + s.get('cli.port'), {
+    transports: ['websocket']
+});
+
+socket.on('connect', function () {
+    debug('connected  to http://localhost:' + s.get('cli.port'));
+});
+
+socket.on('echo', function (msg) {
+    if (msg.result) {
+        console.log(msg);
+        process.exit();
+    } else {
+        console.log(msg);
+    }
+});
+
+program
+    .version(require('../package.json').version);
+
+program
+    .command('add <path>')
+    .description('prepare user profile configuration for first time use')
+    .action(function(appPath, options){
+        var define = require(path.join(path.resolve(appPath), 'dpe.json'));
+
+        Object.keys(define).map((key) => {
+            define[key].file = path.resolve(define[key].file);
+        });
+
+        socket.emit('signal.create', define);
+    });
+
+program
+    .command('call <name> [args]')
+    .description('prepare user profile configuration for first time use')
+    .action(function(name, args) {
+        var newSignal = {};
+        newSignal[name] = args ? require(path.resolve(args)) : {};
+        socket.emit('signal.create', newSignal);
+    });
+
+program
+    .command('build <name>')
+    .description('prepare user profile configuration for first time use')
+    .action(function(name) {
+        var newSignal = {
+            "com.build": {
+                name: name
+            }
+        };
+        socket.emit('signal.create', newSignal);
+    });
+
+program.parse(process.argv);

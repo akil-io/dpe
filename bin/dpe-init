@@ -1,0 +1,54 @@
+#!/usr/bin/env node
+
+"use strict";
+
+var program = require('commander');
+
+var debug   = require('debug')('dpe:cli'),
+    async   = require('async'),
+    path    = require('path'),
+    fs      = require('fs');
+
+program
+    .version(require('../package.json').version)
+    .parse(process.argv);
+
+if (fs.readdirSync(process.cwd(), 'utf8').length) {
+    console.error('Current directory contain files');
+    process.exit(1);
+}
+
+var dpePath = path.join(process.cwd(), '.dpe');
+var config = {
+    path: {
+        deps: path.join(dpePath, 'deps'),
+        data: path.join(dpePath, 'data'),
+        tmp: path.join(dpePath, 'tmp')
+    }
+};
+var user = {};
+var app = {};
+
+async.map([
+    dpePath,
+    config.path.deps,
+    config.path.data,
+    config.path.tmp], fs.mkdir, (err) => {
+    if (err) {
+        console.error(err);
+        process.exit(1);
+    } else {
+        async.series([
+            (callback) => { fs.writeFile(path.join(dpePath, 'config.json'), JSON.stringify(config, null, '  '), 'utf8', callback) },
+            (callback) => { fs.writeFile(path.join(dpePath, 'user.json'), JSON.stringify(user, null, '  '), 'utf8', callback) },
+            (callback) => { fs.writeFile(path.join(process.cwd(), 'dpe.json'), JSON.stringify(app, null, '  '), 'utf8', callback) }
+        ], (err) => {
+            if (err) {
+                console.error(err);
+                process.exit();
+            } else {
+                console.log('Ready');
+            }
+        });
+    }
+});

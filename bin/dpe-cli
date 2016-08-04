@@ -1,0 +1,42 @@
+#!/usr/bin/env node
+"use strict";
+
+var debug   = require('debug')('dpe:cli');
+var util = require('util');
+var argv = require('optimist').argv;
+var io = require('socket.io-client');
+var path = require('path');
+
+var Service = require('../lib/service');
+var s = new Service({
+    init: false
+});
+
+if (argv.file) {
+    argv.file = path.resolve(argv.file);
+}
+if (argv._) {
+    try {
+        var jsonSignal = JSON.parse(argv._);
+        argv = jsonSignal;
+    } catch(e) {}
+}
+
+var socket = io('http://localhost:' + s.get('cli.port'), {
+    transports: ['websocket']
+});
+
+socket.on('connect', function () {
+    debug('connected  to http://localhost:' + s.get('cli.port'));
+    debug('send', argv);
+    socket.emit('signal.create', argv);
+});
+
+socket.on('echo', function (msg) {
+    if (msg.result) {
+        console.log(msg);
+        process.exit();
+    } else {
+        console.log(msg);
+    }
+});
