@@ -93,7 +93,11 @@ if (program.daemon) {
     var signal = null;
     try {
         if (program.coreFile) {
+            var corePath = path.resolve(program.coreFile);
             signal = JSON.parse(fs.readFileSync(path.resolve(program.coreFile), 'utf8'));
+            for (let key of Object.keys(signal)) {
+                signal[key]["require"] = path.resolve( path.basename(corePath), signal[key]["require"] );
+            }
         } else {
             Service.error(new Error('E_NO_CORE'));
             process.exit(1);
