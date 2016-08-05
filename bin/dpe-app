@@ -37,10 +37,11 @@ program
     .command('add <path>')
     .description('prepare user profile configuration for first time use')
     .action(function(appPath, options){
-        var define = require(path.join(path.resolve(appPath), 'dpe.json'));
+        appPath = path.resolve(appPath);
+        var define = require(appPath, 'dpe.json');
 
         Object.keys(define).map((key) => {
-            define[key].file = path.resolve(define[key].file);
+            define[key].file = path.resolve(appPath, define[key].file);
         });
 
         socket.emit('signal.create', define);
