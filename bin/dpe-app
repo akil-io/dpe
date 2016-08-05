@@ -38,7 +38,7 @@ program
     .description('prepare user profile configuration for first time use')
     .action(function(appPath, options){
         appPath = path.resolve(appPath);
-        var define = require(appPath, 'dpe.json');
+        var define = require(path.join(appPath, 'dpe.json'));
 
         Object.keys(define).map((key) => {
             define[key].file = path.resolve(appPath, define[key].file);
