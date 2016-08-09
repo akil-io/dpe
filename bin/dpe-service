@@ -14,8 +14,7 @@ var Service = require('../lib/service');
 
 program
     .version(require('../package.json').version)
-    .option('-f, --core-file <file>', 'core initiate signal with local file')
-    //.option('-f, --core-url <url>', 'core initiate signal')
+    .option('-m, --modules <modules>', 'core initiate signal')
     .option('-d, --daemon', 'run daemon in current terminal');
 
 program
@@ -33,9 +32,9 @@ program
     });
 
 program
-    .command('start <core>')
+    .command('start <modules...>')
     .description('start dpe daemon in background and detach cli')
-    .action(function(core){
+    .action(function(modules){
         try {
             var s = new Service({
                 init: false
@@ -44,11 +43,19 @@ program
             console.log('For first time you need to run: sudo dpe service configure ..., read help for options.');
             process.exit();
         }
+        var isCoreFound = false;
+        modules.map((name) => {
+            if (s.get('deps.' + name).type == 'core') isCoreFound = true;
+        });
+        if (!isCoreFound) {
+            console.log('Need at least one core in module list');
+            process.exit(1);
+        }
         const spawn = require('child_process').spawn;
         const out = fs.openSync(s.get('log.out'), 'a');
         const err = fs.openSync(s.get('log.err'), 'a');
 
-        const child = spawn(process.argv[1], ['--daemon','--core-file', path.resolve(core)], {
+        const child = spawn(process.argv[1], ['--daemon','--modules', modules.join(',')], {
             detached: true,
             cwd: process.cwd(),
             stdio: ['ignore', out, err]
@@ -98,19 +105,12 @@ program.parse(process.argv);
 if (program.daemon) {
     var signal = null;
     try {
-        if (program.coreFile) {
-            var corePath = path.resolve(program.coreFile);
-            signal = JSON.parse(fs.readFileSync(path.resolve(program.coreFile), 'utf8'));
-            for (let key of Object.keys(signal)) {
-                signal[key]["require"] = path.resolve( path.dirname(corePath), signal[key]["require"] );
-            }
-        } else {
-            Service.error(new Error('E_NO_CORE'));
-            process.exit(1);
+        if (program.modules) {
+            console.log(program.modules);
         }
         (new Service({
             init: false
-        }, signal)).start();
+        }, program.modules.split(','))).start();
     } catch (err) {
         Service.error(err);
     }

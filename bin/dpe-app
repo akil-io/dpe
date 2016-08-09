@@ -9,63 +9,108 @@ var io = require('socket.io-client');
 var path = require('path');
 
 var Service = require('../lib/service');
-var s = new Service({
-    init: false
-});
-
-var socket = io('http://localhost:' + s.get('cli.port'), {
-    transports: ['websocket']
-});
-
-socket.on('connect', function () {
-    debug('connected  to http://localhost:' + s.get('cli.port'));
-});
-
-socket.on('echo', function (msg) {
-    if (msg.result) {
-        console.log(msg);
-        process.exit();
-    } else {
-        console.log(msg);
-    }
-});
+try {
+    var s = new Service({
+        init: false
+    });
+} catch (err) {
+    console.log('For first time you need to run: sudo dpe service configure ..., read help for options.');
+    process.exit(1);
+}
 
 program
     .version(require('../package.json').version);
 
 program
-    .command('add <path>')
+    .command('add <name>')
     .description('prepare user profile configuration for first time use')
-    .action(function(appPath, options){
-        appPath = path.resolve(appPath);
-        var define = require(path.join(appPath, 'dpe.json'));
+    .option('-c, --core', 'module type core')
+    .option('-m, --module', 'module type module')
+    .option('-a, --app', 'module type app')
+    .option('-f, --file <file>', 'source type file')
+    .option('-g, --git <git>', 'source type git')
+    .option('-n, --npm <npm>', 'source type npm')
+    .action(function(name, options) {
+        var type = null;
+        if (options.core) type = 'core';
+        if (options.module) type = 'module';
+        if (options.app) type = 'app';
+        if (!type) {
+            console.log('Type required');
+            process.exit(1);
+        }
+        console.log(`Add: ${name} - ${type}`);
+        if (options.file) {
+            console.log('from file: ' + path.resolve(options.file));
+            s.set('deps.' + name, {
+                type: type,
+                file: path.resolve(options.file),
+                require: path.resolve(options.file)
+            });
+        }
+        if (options.git) {
+            console.log('from git: ' + options.git);
+            const spawn = require('child_process').spawn;
+            const child = spawn('git', ['clone', options.git, name], {
+                detached: true,
+                cwd: s.get('module.path'),
+                stdio: 'inherit'
+            });
+            child.on('close', (code) => {
+                if (code != 0) {
+                    console.log('Can not add module to dependencies');
+                } else {
+                    s.set('deps.' + name, {
+                        type: type,
+                        git: options.git,
+                        require: path.join(s.get('module.path'), name, 'dpe.json')
+                    });
+                    s.save();
+                    spawn('npm', ['install'], {
+                        detached: true,
+                        cwd: path.join(s.get('module.path'), name),
+                        stdio: 'inherit'
+                    });
+                    console.log('Module add to your dependencies');
+                }
+            });
+        }
+        if (options.npm) {
+            console.log('from npm: ' + options.npm);
+            const spawn = require('child_process').spawn;
+            const child = spawn('npm', ['install', options.npm], {
+                detached: true,
+                cwd: s.get('module.path'),
+                stdio: 'inherit'
+            });
+            child.on('close', (code) => {
+                if (code != 0) {
+                    console.log('Can not add module to dependencies');
+                } else {
+                    s.set('deps.' + name, {
+                        type: type,
+                        npm: options.npm,
+                        require: path.join(s.get('module.path'), 'node_modules', name, 'dpe.json')
+                    });
+                    s.save();
+                    console.log('Module add to your dependencies');
+                }
+            });
+        }
+    });
 
-        Object.keys(define).map((key) => {
-            define[key].file = path.resolve(appPath, define[key].file);
+program
+    .command('list')
+    .description('prepare user profile configuration for first time use')
+    .action(function(name, options) {
+        var deps = s.get('deps');
+        Object.keys(deps).map((key) => {
+            var type = null;
+            if (deps[key]['file']) type = 'file';
+            if (deps[key]['git']) type = 'git';
+            if (deps[key]['npm']) type = 'npm';
+            console.log(` + [${deps[key].type}] ${key}: ${type}=${deps[key][type]}`);
         });
-
-        socket.emit('signal.create', define);
-    });
-
-program
-    .command('call <name> [args]')
-    .description('prepare user profile configuration for first time use')
-    .action(function(name, args) {
-        var newSignal = {};
-        newSignal[name] = args ? require(path.resolve(args)) : {};
-        socket.emit('signal.create', newSignal);
-    });
-
-program
-    .command('build <name>')
-    .description('prepare user profile configuration for first time use')
-    .action(function(name) {
-        var newSignal = {
-            "com.build": {
-                name: name
-            }
-        };
-        socket.emit('signal.create', newSignal);
     });
 
 program.parse(process.argv);
