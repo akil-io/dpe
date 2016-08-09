@@ -33,6 +33,6 @@ socket.on('connect', function () {
 });
 
 socket.on('echo', function (msg) {
-    console.log("ECHO: ", msg);
+    console.log("ECHO: ", util.inspect(msg, {depth:null,colors:true}));
     process.exit();
 });
