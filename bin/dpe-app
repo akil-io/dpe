@@ -39,6 +39,7 @@ program
             console.log('Type required');
             process.exit(1);
         }
+        var npmCmd = (require('os').platform() == 'win32') ? 'npm.cmd' : 'npm';
         console.log(`Add: ${name} - ${type}`);
         if (options.file) {
             console.log('from file: ' + path.resolve(options.file));
@@ -66,7 +67,7 @@ program
                         require: path.join(s.get('module.path'), name, 'dpe.json')
                     });
                     s.save();
-                    spawn('npm', ['install'], {
+                    spawn(npmCmd, ['install'], {
                         detached: true,
                         cwd: path.join(s.get('module.path'), name),
                         stdio: 'inherit'
@@ -78,7 +79,7 @@ program
         if (options.npm) {
             console.log('from npm: ' + options.npm);
             const spawn = require('child_process').spawn;
-            const child = spawn('npm', ['install', options.npm], {
+            const child = spawn(npmCmd, ['install', options.npm], {
                 detached: true,
                 cwd: s.get('module.path'),
                 stdio: 'inherit'
