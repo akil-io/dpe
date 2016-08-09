@@ -12,8 +12,15 @@
   "bin": {
     "dpe": "bin/dpe"
   },
-  "author": "",
+  "author": "Alex Martynov <info@akil.io> <https://akil.io>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/akil-io/dpe.git"
+  },
+  "bugs": {
+    "url": "https://github.com/akil-io/dpe/issues"
+  },
   "dependencies": {
     "async": "^2.0.0",
     "commander": "^2.9.0",
