@@ -7,6 +7,7 @@ var program = require('commander');
 var debug   = require('debug')('dpe:cli'),
     async   = require('async'),
     path    = require('path'),
+    os      = require('os'),
     fs      = require('fs');
 
 var Service = require('../lib/service');
@@ -21,9 +22,14 @@ program
     .command('configure')
     .description('prepare user profile configuration for first time use')
     .action(function(){
-        new Service({
+        fs.mkdirSync(path.join(os.homedir(), '.dpe'));
+        fs.mkdirSync(path.join(os.homedir(), '.dpe', 'tmp'));
+        fs.mkdirSync(path.join(os.homedir(), '.dpe', 'log'));
+        fs.mkdirSync(path.join(os.homedir(), '.dpe', 'modules'));
+
+        (new Service({
             init: true
-        });
+        })).save();
     });
 
 program
