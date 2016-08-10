@@ -34,7 +34,7 @@ program
 program
     .command('start <modules...>')
     .description('start dpe daemon in background and detach cli')
-    .action(function(modules){
+    .action(function(modules) {
         try {
             var s = new Service({
                 init: false
