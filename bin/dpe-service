@@ -15,6 +15,8 @@ var Service = require('../lib/service');
 program
     .version(require('../package.json').version)
     .option('-m, --modules <modules>', 'core initiate signal')
+    .option('-n, --prefix <prefix>', 'core name prefix')
+    .option('-p, --port <port>', 'cli port')
     .option('-d, --daemon', 'run daemon in current terminal');
 
 program
@@ -109,7 +111,9 @@ if (program.daemon) {
             console.log(program.modules);
         }
         (new Service({
-            init: false
+            init: false,
+            prefix: program.prefix ? program.prefix : '',
+            port: program.port ? program.port : null
         }, program.modules.split(','))).start();
     } catch (err) {
         Service.error(err);
