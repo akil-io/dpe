@@ -135,6 +135,11 @@ program
         }
         if (options.args) {
             jsonSignal[name] = qs.parse(options.args, ',');
+            for (var key in jsonSignal[name]) {
+                if (jsonSignal[name][key] == "true") jsonSignal[name][key] = true;
+                if (jsonSignal[name][key] == "false") jsonSignal[name][key] = false;
+                if (jsonSignal[name][key] == "now()") jsonSignal[name][key] = Date.now();
+            }
         }
         console.log(jsonSignal);
         s.connect('http://localhost', s.get('cli.port'), {
