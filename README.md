@@ -29,20 +29,36 @@
 1. Установить глобально npm пакет с фреймворком
 
     ```bash 
-    npm install -g dpe
+    sudo npm install -g dpe
     ```
-1. Загрузить подходящее ядро, например доступное по умолчанию для
-    локальной разработки ```https://git.akil.io/scm/dpe/default.git```
+
 1. Сконфигурировать сервис в системе (вызвать в любой директории)
 
     ```bash
-    sudo dpe service configure
+    dpe service configure
     ```
-1. Запустить сервис с указанным ядром
+1. Добавить зависимости
 
     ```bash
-    sudo dpe service start ./path/to/core/_init.signal.json
+    dpe app add -c -g https://domain.com/path/to.git name1
+    dpe app add -a -f ../path/to/directory/dpe.json name2
+    dpe app add -m -n npm-module-name name3
     ```
+    Опции:
+     -c, --core добавляет функции с уровнем исполнения ядра (возможно все)
+     -m, --module добавляет функции с уровнем исполнения модуля (нормальный)
+     -a, --app добавляет функции с уровнем исполнения приложения (песочница)
+     
+     -g, --git получить зависимость из GIT, должен содержать dpe.json в корне
+     -f, --file загрузить локально dpe.json
+     -n, --npm получить из NPM
+   
+1. Запустить сервис с выбранными зависимостями
+
+    ```bash
+    dpe service start name1 name2
+    ```
+     
 1. Создать приложение в требуемой директории
 
     ```bash
@@ -56,7 +72,7 @@
 содержимое test.js
 
     ```javascript
-    module.exports = function (env, args, callback) {
+    module.exports.A = function (env, args, callback) {
         console.log('HELLO WORLD!');
         callback(null, true);
     };
@@ -75,35 +91,28 @@
 1. Добавить приложение в сервис (исполнять в директории приложения)
 
     ```bash
-    dpe app add ./
+    dpe app add -a -f ./dpe.json
     ```
-1. Собрать функцию в сервисе (разрешаются зависимости, выполняется 
-    наследование, подключаются триггеры и устанавливаются нужные 
-    соединения)
     
-    ```bash
-    dpe app build test
-    ```
-
 1. Вызвать функцию
 
     ```bash
-    dpe app call test
+    dpe app call test.A
     ```
 
 # FAQ
 
-1. Как передать аргумент в функцию - dpe app call test ./arg.json
+1. Как передать аргумент в функцию - dpe app call test -a "argName=argValue"
 1. Как определить порядок вызова функций в сигнале
 
     ```javascript
     {
         "A": {
+            "@before": "B"
             "arg1": "test"
         },
         "B": {
             "@target": true,
-            "arg1": "$A",
             "arg2": 100
         }
     }
@@ -116,20 +125,6 @@
 
 1. Как динамически определять порядок исполнения функций
 
-Вариант первый
-    ```javascript
-    {
-        "A": {
-            "@observer": true
-        },
-        "B": {}
-        "C": {}
-    }
-    ```
-
-После каждого вызова функции решение о следующем действии принимает A
-
-Вариант второй с триггерами
     ```javascript
     {
         "A": {
@@ -142,42 +137,15 @@
     }
     ```
 
-1. Как получить состояние сигнала или процесса
+1. Как получить состояние процесса
 
     ```bash
-    dpe cli signal signal.json
+    dpe app call process.state -a "pid=..."
+    dpe app call process.list
     ```
-
-    ```javascript
-    {
-        _sid: <SID>,
-        _pid: <PID>,
-        "@process.state": "*"
-    }
-    ```
-    ```javascript
-    {
-        _sid: <SID>,
-        _pid: <PID>,
-        "@signal.state": "*"
-    }
-    ```
-
-В теге @state указывается либо * для полного состояния, либо массив 
-конкретных ключей, для сигнала это
-signal.status
-signal.history
-для процесса
-process.$<resource_name>
-process.$<state>
-process.status
 
 1. Как остановить исполнение процесса
 
-    ```javascript
-    {
-        _sid: <SID>,
-        _pid: <PID>,
-        "@process.action": "kill"
-    }
-    ```
+    ```bash
+    dpe app call process.kill -a "pid=..."
+    ```    
