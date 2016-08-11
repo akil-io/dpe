@@ -29,7 +29,8 @@ program
         fs.mkdirSync(path.join(os.homedir(), '.dpe', 'modules'));
 
         (new Service({
-            init: true
+            init: true,
+            prefix: ''
         })).save();
     });
 
@@ -39,7 +40,8 @@ program
     .action(function(modules) {
         try {
             var s = new Service({
-                init: false
+                init: false,
+                prefix: ''
             });
         } catch (err) {
             console.log('For first time you need to run: sudo dpe service configure ..., read help for options.');
