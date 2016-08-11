@@ -1,0 +1,10 @@
+{
+  "apps": [{
+    "name": "dpe",
+    "script": "./bin/dpe-service",
+    "env": {
+      "DEBUG": "dpe*"
+    },
+    "args": "--daemon --modules default,test"
+  }]
+}

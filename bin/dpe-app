@@ -9,6 +9,8 @@ var io = require('socket.io-client');
 var path = require('path');
 var _ = require('lodash');
 
+const qs = require('querystring');
+
 var Service = require('../lib/service');
 try {
     var s = new Service({
@@ -49,6 +51,7 @@ program
                 file: path.resolve(options.file),
                 require: path.resolve(options.file)
             });
+            s.save();
         }
         if (options.git) {
             console.log('from git: ' + options.git);
@@ -122,8 +125,6 @@ program
     .option('-t, --target <target>', 'target node')
     .option('-p, --pid <pid>', 'target process')
     .action(function (name, options) {
-        console.log('call to ' + name, options.args, options.target, options.pid);
-
         var jsonSignal = {};
         jsonSignal[name] = {};
         if (options.target) {
@@ -133,13 +134,13 @@ program
             jsonSignal.__pid = options.pid;
         }
         if (options.args) {
-            options.args.split(',').map((item) => {
-                var [key, value] = item.split('=');
-                jsonSignal[name][key] = value;
-            });
+            jsonSignal[name] = qs.parse(options.args, ',');
         }
         console.log(jsonSignal);
-        s.connect('http://localhost', s.get('cli.port'), (err, client) => {
+        s.connect('http://localhost', s.get('cli.port'), {
+            uid: "local",
+            key: s.get('local.key')
+        }, (err, client) => {
             if (err) {
                 console.error(err);
                 process.exit(1);

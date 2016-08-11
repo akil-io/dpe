@@ -35,6 +35,22 @@ program
     });
 
 program
+    .command('reset')
+    .description('clear configuration')
+    .action(function(){
+        try {
+            var pid = (new Service()).getPid();
+        } catch (err) {}
+        if (pid) {
+            console.log(`Try to kill process ${pid}`);
+            process.kill(pid, 'SIGINT');
+        }
+        require('child_process').spawn('rm', ['-rf', path.join(os.homedir(), '.dpe')], {
+            stdio: 'inherit'
+        });
+    });
+
+program
     .command('start <modules...>')
     .description('start dpe daemon in background and detach cli')
     .action(function(modules) {

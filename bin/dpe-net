@@ -1,0 +1,57 @@
+#!/usr/bin/env node
+
+"use strict";
+
+var debug   = require('debug')('dpe:cli');
+var util = require('util');
+var program = require('commander');
+var io = require('socket.io-client');
+var path = require('path');
+var _ = require('lodash');
+
+const crypto = require('crypto');
+const hash = crypto.createHash('md5');
+var url = require('url');
+
+var Service = require('../lib/service');
+try {
+    var s = new Service({
+        init: false
+    });
+} catch (err) {
+    console.log('For first time you need to run: sudo dpe service configure ..., read help for options.');
+    process.exit(1);
+}
+
+program
+    .version(require('../package.json').version);
+
+program
+    .command('add <url>')
+    .description('add server')
+    .action(function(_url) {
+        var urlHash = hash.update(_url).digest('hex');
+        var parts = url.parse(_url);
+        s.set('net.servers.' + urlHash, parts);
+        s.save();
+    });
+
+program
+    .command('list')
+    .description('add server')
+    .action(function() {
+        Object.keys(s.get('net.servers')).map((item) => {
+            console.log(s.get('net.servers.' + item).href);
+        });
+    });
+
+program
+    .command('remove <url>')
+    .description('add server')
+    .action(function(_url) {
+        var urlHash = hash.update(_url).digest('hex');
+        s.unset('net.servers.' + urlHash);
+        s.save();
+    });
+
+program.parse(process.argv);

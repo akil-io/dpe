@@ -8,4 +8,5 @@ program
     .command('service', 'manage background service')
     .command('app', 'manage local app')
     .command('cli', 'command line utility')
+    .command('net', 'network utility')
     .parse(process.argv);
