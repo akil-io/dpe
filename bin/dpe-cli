@@ -3,36 +3,37 @@
 
 var debug   = require('debug')('dpe:cli');
 var util = require('util');
-var argv = require('optimist').argv;
-var io = require('socket.io-client');
 var path = require('path');
 var fs  = require('fs');
+
+var program = require('commander');
 
 var Service = require('../lib/service');
 var s = new Service({
     init: false
 });
 
+program
+    .version(require('../package.json').version)
+    .option('-f, --file <file>', 'core initiate signal')
+    .option('-k, --key <key>', 'local key', s.get('local.key'))
+    .option('-u, --url <url>', 'core url', 'localhost')
+    .option('-p, --port <port>', 'cli port', s.get('cli.port'));
+
 var jsonSignal = {};
 
-if (argv.file) {
+if (program.file) {
     try {
-        jsonSignal = JSON.parse(fs.readFileSync(path.resolve(argv.file), 'utf8'));
+        jsonSignal = JSON.parse(fs.readFileSync(path.resolve(program.file), 'utf8'));
     } catch (e) {
         console.error('Can not parse signal');
         process.exit(1);
     }
 }
 
-if (argv._.length) {
-    //@TODO: cli command
-    console.error('Cli commands is not implemented');
-    process.exit(1);
-}
-
-s.connect('http://localhost', s.get('cli.port'), {
+s.connect('http://' + program.url, program.port, {
     uid: "local",
-    key: s.get('local.key')
+    key: program.key
 }, (err, client) => {
     if (err) {
         console.error(err);
@@ -44,7 +45,7 @@ s.connect('http://localhost', s.get('cli.port'), {
         process.exit();
     });
 
-    debug('connected  to http://localhost:' + s.get('cli.port'));
+    debug('connected  to http://:' + program.url + ":" + program.port);
     debug('send', jsonSignal);
     client.request(jsonSignal);
 });
