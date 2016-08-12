@@ -30,7 +30,10 @@ if (argv._.length) {
     process.exit(1);
 }
 
-s.connect('http://localhost', s.get('cli.port'), (err, client) => {
+s.connect('http://localhost', s.get('cli.port'), {
+    uid: "local",
+    key: s.get('local.key')
+}, (err, client) => {
     if (err) {
         console.error(err);
         process.exit(1);
