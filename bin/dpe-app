@@ -124,6 +124,8 @@ program
     .option('-a, --args <args>', 'function arguments')
     .option('-t, --target <target>', 'target node')
     .option('-p, --pid <pid>', 'target process')
+    .option('-u, --url <url>', 'url for connection', 'localhost')
+    .option('-n, --port <port>', 'port for connection', s.get('cli.port'))
     .action(function (name, options) {
         var jsonSignal = {};
         jsonSignal[name] = {};
@@ -142,7 +144,7 @@ program
             }
         }
         console.log(jsonSignal);
-        s.connect('http://localhost', s.get('cli.port'), {
+        s.connect('http://' + options.url, options.port, {
             uid: "local",
             key: s.get('local.key')
         }, (err, client) => {

@@ -18,7 +18,8 @@ program
     .option('-f, --file <file>', 'core initiate signal')
     .option('-k, --key <key>', 'local key', s.get('local.key'))
     .option('-u, --url <url>', 'core url', 'localhost')
-    .option('-p, --port <port>', 'cli port', s.get('cli.port'));
+    .option('-p, --port <port>', 'cli port', s.get('cli.port'))
+    .parse(process.argv);
 
 var jsonSignal = {};
 
@@ -30,7 +31,8 @@ if (program.file) {
         process.exit(1);
     }
 }
-
+console.log("CONNECT:" + program.url + ":" + program.port);
+process.exit();
 s.connect('http://' + program.url, program.port, {
     uid: "local",
     key: program.key
