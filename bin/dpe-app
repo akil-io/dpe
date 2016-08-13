@@ -130,10 +130,10 @@ program
         var jsonSignal = {};
         jsonSignal[name] = {};
         if (options.target) {
-            jsonSignal.__target = options.target;
+            jsonSignal._target = options.target;
         }
         if (options.pid) {
-            jsonSignal.__pid = options.pid;
+            jsonSignal._pid = options.pid;
         }
         if (options.args) {
             jsonSignal[name] = qs.parse(options.args, ',');
@@ -143,7 +143,7 @@ program
                 if (jsonSignal[name][key] == "now()") jsonSignal[name][key] = Date.now();
             }
         }
-        console.log(jsonSignal);
+        console.log("SEND:", util.inspect(jsonSignal, {depth:null,colors:true}));
         s.connect('http://' + options.url, options.port, {
             uid: "local",
             key: s.get('local.key')
