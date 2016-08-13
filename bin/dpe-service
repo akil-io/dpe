@@ -125,14 +125,11 @@ program.parse(process.argv);
 if (program.daemon) {
     var signal = null;
     try {
-        if (program.modules) {
-            console.log(program.modules);
-        }
         (new Service({
             init: false,
             prefix: program.prefix ? program.prefix : '',
             port: program.port ? program.port : null
-        }, program.modules.split(','))).start();
+        }, program.modules ? program.modules.split(',') : [])).start();
     } catch (err) {
         Service.error(err);
     }
