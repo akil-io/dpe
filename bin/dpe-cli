@@ -32,7 +32,7 @@ if (program.file) {
     }
 }
 console.log("CONNECT:" + program.url + ":" + program.port);
-process.exit();
+
 s.connect('http://' + program.url, program.port, {
     uid: "local",
     key: program.key
