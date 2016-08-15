@@ -7,6 +7,7 @@ var util = require('util');
 var program = require('commander');
 var io = require('socket.io-client');
 var path = require('path');
+var fs = require('fs');
 var _ = require('lodash');
 
 const qs = require('querystring');
@@ -122,10 +123,12 @@ program
     .command('call <name>')
     .description('send signal to one function')
     .option('-a, --args <args>', 'function arguments')
+    .option('-f, --file <file>', 'function arguments from file')
     .option('-t, --target <target>', 'target node')
     .option('-p, --pid <pid>', 'target process')
     .option('-u, --url <url>', 'url for connection', 'localhost')
     .option('-n, --port <port>', 'port for connection', s.get('cli.port'))
+    .option('-x, --ttl <ttl>', 'time to life for api call')
     .action(function (name, options) {
         var jsonSignal = {};
         jsonSignal[name] = {};
@@ -135,13 +138,23 @@ program
         if (options.pid) {
             jsonSignal._pid = options.pid;
         }
-        if (options.args) {
+        if (options.ttl) {
+            jsonSignal._ttl = parseInt(options.ttl);
+        }
+        if (options.args && !options.file) {
             jsonSignal[name] = qs.parse(options.args, ',');
             for (var key in jsonSignal[name]) {
                 if (jsonSignal[name][key] == "true") jsonSignal[name][key] = true;
                 if (jsonSignal[name][key] == "false") jsonSignal[name][key] = false;
                 if (jsonSignal[name][key] == "now()") jsonSignal[name][key] = Date.now();
             }
+        }
+        if (options.file && !options.args) {
+            jsonSignal[name] = JSON.parse(fs.readFileSync(path.resolve(options.file)));
+        }
+        if (options.file && options.args) {
+            console.error('error: file or arguments, only one.');
+            process.exit(1);
         }
         console.log("SEND:", util.inspect(jsonSignal, {depth:null,colors:true}));
         s.connect('http://' + options.url, options.port, {
