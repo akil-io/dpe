@@ -12,18 +12,9 @@ var _ = require('lodash');
 
 const qs = require('querystring');
 
-var Service = require('../lib/service');
-try {
-    var s = new Service({
-        init: false
-    });
-} catch (err) {
-    console.log('For first time you need to run: sudo dpe service configure ..., read help for options.');
-    process.exit(1);
-}
-
 program
-    .version(require('../package.json').version);
+    .version(require('../package.json').version)
+    .option('-k, --config <config>', 'path to config directory');
 
 program
     .command('add <name>')
@@ -35,6 +26,16 @@ program
     .option('-g, --git <git>', 'source type git')
     .option('-n, --npm <npm>', 'source type npm')
     .action(function(name, options) {
+        var Service = require('../lib/service');
+        try {
+            var s = new Service({
+                init: false,
+                config: program.config
+            });
+        } catch (err) {
+            console.log('For first time you need to run: sudo dpe service configure ..., read help for options.');
+            process.exit(1);
+        }
         var type = null;
         if (options.core) type = 'core';
         if (options.module) type = 'module';
@@ -109,6 +110,16 @@ program
     .command('list')
     .description('prepare user profile configuration for first time use')
     .action(function(name, options) {
+        var Service = require('../lib/service');
+        try {
+            var s = new Service({
+                init: false,
+                config: program.config
+            });
+        } catch (err) {
+            console.log('For first time you need to run: sudo dpe service configure ..., read help for options.');
+            process.exit(1);
+        }
         var deps = s.get('deps');
         Object.keys(deps).map((key) => {
             var type = null;
@@ -127,9 +138,19 @@ program
     .option('-t, --target <target>', 'target node')
     .option('-p, --pid <pid>', 'target process')
     .option('-u, --url <url>', 'url for connection', 'localhost')
-    .option('-n, --port <port>', 'port for connection', s.get('cli.port'))
+    .option('-n, --port <port>', 'port for connection', 49001)
     .option('-x, --ttl <ttl>', 'time to life for api call')
     .action(function (name, options) {
+        var Service = require('../lib/service');
+        try {
+            var s = new Service({
+                init: false,
+                config: program.config
+            });
+        } catch (err) {
+            console.log('For first time you need to run: sudo dpe service configure ..., read help for options.');
+            process.exit(1);
+        }
         var jsonSignal = {};
         jsonSignal[name] = {};
         if (options.target) {
@@ -157,10 +178,11 @@ program
             process.exit(1);
         }
         console.log("SEND:", util.inspect(jsonSignal, {depth:null,colors:true}));
-        s.connect('http://' + options.url, options.port, {
+        s.connect('http://' + options.url + ":" + options.port, {
             uid: "local",
-            key: s.get('local.key')
-        }, (err, client) => {
+            key: s.get('local.key'),
+            port: 0
+        }, (err, sid, client) => {
             if (err) {
                 console.error(err);
                 process.exit(1);

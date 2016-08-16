@@ -17,27 +17,31 @@ program
     .option('-m, --modules <modules>', 'core initiate signal')
     .option('-n, --prefix <prefix>', 'core name prefix')
     .option('-p, --port <port>', 'cli port')
+    .option('-c, --config <config>', 'path to config directory')
     .option('-d, --daemon', 'run daemon in current terminal');
 
 program
     .command('configure')
     .description('prepare user profile configuration for first time use')
     .action(function(){
-        fs.mkdirSync(path.join(os.homedir(), '.dpe'));
-        fs.mkdirSync(path.join(os.homedir(), '.dpe', 'tmp'));
-        fs.mkdirSync(path.join(os.homedir(), '.dpe', 'log'));
-        fs.mkdirSync(path.join(os.homedir(), '.dpe', 'modules'));
+        var configPath = program.config ? path.resolve(program.config) : path.join(os.homedir(), '.dpe');
+        fs.mkdirSync(configPath);
+        fs.mkdirSync(path.join(configPath, 'tmp'));
+        fs.mkdirSync(path.join(configPath, 'log'));
+        fs.mkdirSync(path.join(configPath, 'modules'));
 
         (new Service({
             init: true,
-            prefix: ''
+            prefix: '',
+            config: configPath
         })).save();
     });
 
 program
-    .command('reset')
+    .command('clear')
     .description('clear configuration')
     .action(function(){
+        var configPath = program.config ? path.resolve(program.config) : os.homedir();
         try {
             var pid = (new Service()).getPid();
         } catch (err) {}
@@ -128,7 +132,8 @@ if (program.daemon) {
         (new Service({
             init: false,
             prefix: program.prefix ? program.prefix : '',
-            port: program.port ? program.port : null
+            port: program.port ? program.port : null,
+            config: program.config ? path.resolve(program.config) : null
         }, program.modules ? program.modules.split(',') : [])).start();
     } catch (err) {
         Service.error(err);

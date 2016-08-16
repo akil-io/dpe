@@ -1,12 +1,11 @@
 {
   "apps": [{
     "name": "dpe",
-    "exec_mode": "cluster",
-    "instances": 1,
+    "exec_mode": "fork",
     "script": "./bin/dpe-service",
     "env": {
       "DEBUG": "dpe*"
     },
-    "args": "--daemon --modules default"
+    "args": "--daemon -p 0 --modules test"
   }]
 }

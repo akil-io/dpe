@@ -33,10 +33,10 @@ if (program.file) {
 }
 console.log("CONNECT:" + program.url + ":" + program.port);
 
-s.connect('http://' + program.url, program.port, {
+s.connect('http://' + program.url + ":" + program.port, {
     uid: "local",
     key: program.key
-}, (err, client) => {
+}, (err, sid, client) => {
     if (err) {
         console.error(err);
         process.exit(1);

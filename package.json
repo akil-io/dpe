@@ -33,5 +33,8 @@
     "socket.io": "^1.4.8",
     "socket.io-client": "^1.4.8"
   },
-  "preferGlobal": "true"
+  "preferGlobal": "true",
+  "devDependencies": {
+    "monitor.io": "^0.1.0"
+  }
 }
