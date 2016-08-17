@@ -6,6 +6,6 @@
     "env": {
       "DEBUG": "dpe*"
     },
-    "args": "--daemon -p 0 --modules test"
+    "args": "--daemon --modules test"
   }]
 }
