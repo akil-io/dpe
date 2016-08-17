@@ -9,4 +9,5 @@ program
     .command('app', 'manage local app')
     .command('cli', 'command line utility')
     .command('net', 'network utility')
+    .command('pm', 'process manager')
     .parse(process.argv);

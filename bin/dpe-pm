@@ -1,0 +1,54 @@
+#!/usr/bin/env node
+
+"use strict";
+
+var program = require('commander');
+var os = require('os');
+var path = require('path');
+var fs = require('fs');
+
+program
+    .version(require('../package.json').version)
+    .option('-c, --config <config>', 'path to config directory', path.join(os.homedir(), '.dpe'));
+
+program
+    .command('configure <instances> <tags> <modules>')
+    .description('add server')
+    .action(function(instances, tags, modules) {
+        var dpeCwd = path.resolve(__dirname, '..');
+        var configPath = path.resolve(program.config);
+
+        var pmConfig = {
+            "apps": []
+        };
+
+        var instanceConfig = {
+            "name": "dpe",
+                "exec_mode": "fork",
+                "script": "./bin/dpe-service",
+                "env": {
+                "DEBUG": "dpe*"
+            },
+            "cwd": dpeCwd,
+            "args": "--daemon "
+        };
+
+        var args = [];
+        if (instances > 1) {
+            args.push('-p 0');
+        }
+        args.push('-c ' + configPath);
+        args.push('-t ' + tags.split(','));
+        args.push('-m ' + modules.split(','));
+
+        instanceConfig.args += args.join(' ');
+
+        for (var i =0; i < instances; i++) {
+            pmConfig.apps.push(instanceConfig);
+        }
+
+        fs.writeFileSync(path.join(configPath, 'pm2.json'), JSON.stringify(pmConfig, null, '  '), 'utf8');
+
+    });
+
+program.parse(process.argv);

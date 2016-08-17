@@ -18,6 +18,7 @@ program
     .option('-n, --prefix <prefix>', 'core name prefix')
     .option('-p, --port <port>', 'cli port')
     .option('-c, --config <config>', 'path to config directory')
+    .option('-t, --tags <tags>')
     .option('-d, --daemon', 'run daemon in current terminal');
 
 program
@@ -133,7 +134,8 @@ if (program.daemon) {
             init: false,
             prefix: program.prefix ? program.prefix : '',
             port: program.port ? program.port : null,
-            config: program.config ? path.resolve(program.config) : null
+            config: program.config ? path.resolve(program.config) : null,
+            tags: program.tags ? program.tags.split(',') : []
         }, program.modules ? program.modules.split(',') : [])).start();
     } catch (err) {
         Service.error(err);
