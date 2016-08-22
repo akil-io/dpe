@@ -56,7 +56,7 @@ program
             s.save();
         }
         if (options.git) {
-            console.log('from git: ' + options.git);
+            console.log('from git: ' + options.git + ' to ' + s.get('module.path'));
             const spawn = require('child_process').spawn;
             const child = spawn('git', ['clone', options.git, name], {
                 detached: true,
