@@ -1,6 +1,6 @@
 {
   "name": "dpe",
-  "version": "1.4.20",
+  "version": "1.4.21",
   "description": "",
   "main": "bin/dpe",
   "directories": {
