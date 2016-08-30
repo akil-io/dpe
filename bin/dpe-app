@@ -136,6 +136,7 @@ program
     .option('-a, --args <args>', 'function arguments')
     .option('-f, --file <file>', 'function arguments from file')
     .option('-t, --target <target>', 'target node')
+    .option('-b, --broadcast <broadcast>', 'broadcast pattern')
     .option('-p, --pid <pid>', 'target process')
     .option('-u, --url <url>', 'url for connection', 'localhost')
     .option('-n, --port <port>', 'port for connection', 49001)
@@ -152,6 +153,7 @@ program
             process.exit(1);
         }
         var jsonSignal = {};
+        var isBroadcasted = false;
         jsonSignal[name] = {};
         if (options.target) {
             jsonSignal._target = options.target;
@@ -161,6 +163,10 @@ program
         }
         if (options.ttl) {
             jsonSignal._ttl = parseInt(options.ttl);
+        }
+        if (options.broadcast) {
+            jsonSignal._broadcast = options.broadcast.split(',');
+            isBroadcasted = true;
         }
         if (options.args && !options.file) {
             jsonSignal[name] = qs.parse(options.args, ',');
@@ -190,7 +196,7 @@ program
 
             client.onResponse(function (msg) {
                 console.log("ECHO: ", util.inspect(msg, {depth:null,colors:true}));
-                process.exit();
+                if (!isBroadcasted) process.exit();
             });
 
             debug('connected  to http://localhost:' + s.get('cli.port'));

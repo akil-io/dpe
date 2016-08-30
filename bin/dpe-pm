@@ -24,9 +24,9 @@ program
 
         var instanceConfig = {
             "name": "dpe",
-                "exec_mode": "fork",
-                "script": "./bin/dpe-service",
-                "env": {
+            "exec_mode": "fork",
+            "script": "./bin/dpe-service",
+            "env": {
                 "DEBUG": "dpe*"
             },
             "cwd": dpeCwd,
@@ -44,7 +44,9 @@ program
         instanceConfig.args += args.join(' ');
 
         for (var i =0; i < instances; i++) {
-            pmConfig.apps.push(instanceConfig);
+            var itemConfig = Object.assign({}, instanceConfig);
+            itemConfig.name += i;
+            pmConfig.apps.push(itemConfig);
         }
 
         fs.writeFileSync(path.join(configPath, 'pm2.json'), JSON.stringify(pmConfig, null, '  '), 'utf8');
