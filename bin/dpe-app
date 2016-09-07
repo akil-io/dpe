@@ -14,7 +14,8 @@ const qs = require('querystring');
 
 program
     .version(require('../package.json').version)
-    .option('-k, --config <config>', 'path to config directory');
+    .option('-k, --config <config>', 'path to config directory')
+    .option('-i, --auth <key>', 'basic auth key');
 
 program
     .command('add <name>')
@@ -187,7 +188,8 @@ program
         s.connect('http://' + options.url + ":" + options.port, {
             uid: "local",
             key: s.get('local.key'),
-            port: 0
+            port: 0,
+            auth: program.auth ? program.auth : null
         }, (err, sid, client) => {
             if (err) {
                 console.error(err);
