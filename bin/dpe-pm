@@ -6,6 +6,9 @@ var program = require('commander');
 var os = require('os');
 var path = require('path');
 var fs = require('fs');
+var util = require('util');
+
+var pm2 = require('pm2');
 
 program
     .version(require('../package.json').version)
@@ -51,6 +54,99 @@ program
 
         fs.writeFileSync(path.join(configPath, 'pm2.json'), JSON.stringify(pmConfig, null, '  '), 'utf8');
 
+    });
+
+program
+    .command('start')
+    .description('add server')
+    .action(function() {
+        var dpeCwd = path.resolve(__dirname, '..');
+        var configPath = path.resolve(program.config);
+
+        pm2.connect(function(err) {
+            if (err) {
+                console.error(err);
+                process.exit(2);
+            }
+
+            pm2.start(path.join(program.config, 'pm2.json'), function (err) {
+                if (err) {
+                    console.log(err);
+                }
+                pm2.disconnect();
+                process.exit();
+            });
+        });
+    });
+
+program
+    .command('list')
+    .description('add server')
+    .action(function() {
+        var dpeCwd = path.resolve(__dirname, '..');
+        var configPath = path.resolve(program.config);
+
+        pm2.connect(function(err) {
+            if (err) {
+                console.error(err);
+                process.exit(2);
+            }
+
+            pm2.list(function (err, processes) {
+                if (err) {
+                    console.log(err);
+                }
+                console.log(util.inspect(processes, {depth:null,colors:true}));
+                pm2.disconnect();
+                process.exit();
+            });
+        });
+    });
+
+program
+    .command('stop')
+    .description('add server')
+    .action(function() {
+        var dpeCwd = path.resolve(__dirname, '..');
+        var configPath = path.resolve(program.config);
+
+        pm2.connect(function(err) {
+            if (err) {
+                console.error(err);
+                process.exit(2);
+            }
+
+            pm2.stop("all", function (err) {
+                if (err) {
+                    console.log(err);
+                }
+                pm2.disconnect();
+                process.exit();
+            });
+        });
+    });
+
+program
+    .command('restart')
+    .description('add server')
+    .action(function() {
+        var dpeCwd = path.resolve(__dirname, '..');
+        var configPath = path.resolve(program.config);
+
+        pm2.connect(function(err) {
+            if (err) {
+                console.error(err);
+                process.exit(2);
+            }
+
+            pm2.restart("all", function (err) {
+                if (err) {
+                    console.log(err);
+                }
+                pm2.disconnect();
+                process.exit();
+            });
+        });
     });
 
 program.parse(process.argv);
