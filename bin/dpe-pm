@@ -36,6 +36,12 @@ program
             "args": "--daemon "
         };
 
+        /*
+         "error_file": path.join(configPath, 'err.log'),
+         "out_file": path.join(configPath, 'out.log'),
+         "combine_logs": true
+        * */
+
         var args = [];
         if (instances > 1) {
             args.push('-p 0');
@@ -54,6 +60,25 @@ program
 
         fs.writeFileSync(path.join(configPath, 'pm2.json'), JSON.stringify(pmConfig, null, '  '), 'utf8');
 
+    });
+
+program
+    .command('watcher')
+    .description('add watcher service')
+    .action(function() {
+        var Service = require('../lib/service');
+        try {
+            (new Service({
+                init: false,
+                config: program.config ? path.resolve(program.config) : null,
+                tags: ['pm'],
+                coreModule: 'pm',
+                keepConnections: false,
+                autoDiscover: false
+            }, [])).start();
+        } catch (err) {
+            Service.error(err);
+        }
     });
 
 program
